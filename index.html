@@ -269,19 +269,7 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;overflow:h
       <div class="form-row"><label>Descripción</label><input type="text" id="f-desc" placeholder="Salario, supermercado…"></div>
       <div class="form-row"><label>Monto ($)</label><input type="number" id="f-monto" inputmode="decimal" placeholder="0.00" min="0" step="0.01"></div>
       <div class="form-row"><label>Categoría</label>
-        <select id="f-cat">
-          <option value="Trabajo">Trabajo / Salario</option>
-          <option value="Freelance">Freelance / Extra</option>
-          <option value="Comida">Comida</option>
-          <option value="Transporte">Transporte</option>
-          <option value="Entretenimiento">Entretenimiento</option>
-          <option value="Salud">Salud</option>
-          <option value="Educación">Educación</option>
-          <option value="Ropa">Ropa</option>
-          <option value="Servicios">Servicios</option>
-          <option value="Ahorro">Ahorro / Inversión</option>
-          <option value="Otro">Otro</option>
-        </select>
+        <select id="f-cat"></select>
       </div>
       <div class="form-row"><label>Fecha</label><input type="date" id="f-fecha"></div>
       <button class="btn-p" onclick="guardarTxn()">Guardar movimiento</button>
@@ -333,6 +321,24 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;overflow:h
     </div>
   </div>
 
+  <!-- PRESUPUESTO -->
+  <div class="page" id="pg-presupuesto">
+    <div id="pres-view">
+      <!-- Hero total -->
+      <div id="pres-hero"></div>
+      <div class="sec-lbl">Por categoría</div>
+      <div id="pres-cats"></div>
+      <div class="sec-lbl">Definir presupuesto</div>
+      <div style="background:var(--card);border:0.5px solid var(--border);border-radius:var(--rad);padding:16px;margin-bottom:10px">
+        <div style="font-size:13px;color:var(--text3);margin-bottom:14px;line-height:1.6">Define cuánto quieres gastar en total y por categoría cada mes.</div>
+        <div class="form-row"><label>Presupuesto total del mes ($)</label><input type="number" id="p-total" inputmode="numeric" placeholder="0"></div>
+        <div class="sec-lbl" style="margin-top:8px">Por categoría (opcional)</div>
+        <div id="p-cat-inputs"></div>
+        <button class="btn-p" onclick="guardarPresupuesto()">Guardar presupuesto</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ANÁLISIS -->
   <div class="page" id="pg-analisis">
     <div class="sec-lbl">Ingresos vs gastos</div>
@@ -347,6 +353,16 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;overflow:h
 
   <!-- AJUSTES -->
   <div class="page" id="pg-ajustes">
+    <div class="sec-lbl">Categorías</div>
+    <div style="background:var(--card);border:0.5px solid var(--border);border-radius:var(--rad);padding:16px;margin-bottom:10px">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:14px;line-height:1.6">Agrega, edita o elimina categorías. Las categorías predeterminadas no se pueden eliminar.</div>
+      <div id="cats-list"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <input type="text" id="new-cat-ico" placeholder="🏷️" style="width:52px;padding:10px;font-size:18px;text-align:center;border:0.5px solid var(--border2);border-radius:var(--rad-sm);background:var(--card2);color:var(--text);flex-shrink:0">
+        <input type="text" id="new-cat-nombre" placeholder="Nombre de categoría" style="flex:1;padding:10px 12px;font-size:14px;font-family:var(--font);border:0.5px solid var(--border2);border-radius:var(--rad-sm);background:var(--card2);color:var(--text);outline:none">
+        <button onclick="agregarCategoria()" style="padding:10px 14px;background:var(--g);color:#0d1410;border:none;border-radius:var(--rad-sm);font-weight:700;font-size:14px;cursor:pointer;flex-shrink:0">+</button>
+      </div>
+    </div>
     <div class="sec-lbl">Respaldo</div>
     <div style="background:var(--card);border:0.5px solid var(--border);border-radius:var(--rad);padding:16px;margin-bottom:10px">
       <div style="font-size:13px;color:var(--text3);line-height:1.6;margin-bottom:14px">Exporta tus datos como JSON para tener un respaldo o restaurarlos en otro dispositivo.</div>
@@ -378,6 +394,10 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;overflow:h
     <span class="nav-ico"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
     <span class="nav-lbl">Créditos</span>
   </button>
+  <button class="nav-btn" onclick="navTo('presupuesto',this)">
+    <span class="nav-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+    <span class="nav-lbl">Presupuesto</span>
+  </button>
   <button class="nav-btn" onclick="navTo('analisis',this)">
     <span class="nav-ico"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
     <span class="nav-lbl">Análisis</span>
@@ -407,18 +427,7 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;overflow:h
     <div class="form-row"><label>Descripción (opcional)</label><input type="text" id="qa-desc" placeholder="¿En qué?"></div>
     <div class="form-grid">
       <div class="form-row"><label>Categoría</label>
-        <select id="qa-cat">
-          <option value="Comida">Comida</option>
-          <option value="Transporte">Transporte</option>
-          <option value="Entretenimiento">Entretenimiento</option>
-          <option value="Servicios">Servicios</option>
-          <option value="Ropa">Ropa</option>
-          <option value="Salud">Salud</option>
-          <option value="Trabajo">Trabajo / Salario</option>
-          <option value="Freelance">Freelance</option>
-          <option value="Ahorro">Ahorro</option>
-          <option value="Otro">Otro</option>
-        </select>
+        <select id="qa-cat"></select>
       </div>
       <div class="form-row"><label>Fecha</label><input type="date" id="qa-fecha"></div>
     </div>
@@ -430,30 +439,84 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;overflow:h
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 // ── STORAGE ──────────────────────────────────────────────────────
-const KEYS={txns:'mf_txns',metas:'mf_metas',tarjs:'mf_tarjs'};
-function loadData(k,fb){try{const r=localStorage.getItem(k);if(!r)return fb;const p=JSON.parse(r);return Array.isArray(p)?p:fb;}catch(e){return fb;}}
+const KEYS={txns:'mf_txns',metas:'mf_metas',tarjs:'mf_tarjs',pres:'mf_pres'};
+function loadData(k,fb){try{const r=localStorage.getItem(k);if(!r)return fb;const p=JSON.parse(r);return Array.isArray(p)?p:(typeof p==='object'?p:fb);}catch(e){return fb;}}
 function saveAll(){
   try{
     localStorage.setItem(KEYS.txns,JSON.stringify(txns));
     localStorage.setItem(KEYS.metas,JSON.stringify(metas));
     localStorage.setItem(KEYS.tarjs,JSON.stringify(tarjs));
+    localStorage.setItem(KEYS.pres,JSON.stringify(presupuesto));
   }catch(e){toast('Error al guardar datos');}
 }
 
 let txns=loadData(KEYS.txns,[]);
 let metas=loadData(KEYS.metas,[]);
 let tarjs=loadData(KEYS.tarjs,[]);
+let presupuesto=loadData(KEYS.pres,{total:0,cats:{}});
 
 // ── CONSTANTS ────────────────────────────────────────────────────
-const CATS={
-  Trabajo:{ico:'💼',col:'#00e5a0'},Freelance:{ico:'💻',col:'#4d9fff'},
-  Comida:{ico:'🍔',col:'#ff4d6d'},Transporte:{ico:'🚌',col:'#b06eff'},
-  Entretenimiento:{ico:'🎮',col:'#ff6b9d'},Salud:{ico:'❤️',col:'#ff4d6d'},
-  Educación:{ico:'📚',col:'#4d9fff'},Ropa:{ico:'👕',col:'#ffb340'},
-  Servicios:{ico:'📱',col:'#8b90a0'},Ahorro:{ico:'🏦',col:'#00e5a0'},Otro:{ico:'📌',col:'#ffb340'}
+const CATS_DEFAULT={
+  Trabajo:{ico:'💼',col:'#00e5a0',fija:true},Freelance:{ico:'💻',col:'#4d9fff',fija:true},
+  Comida:{ico:'🍔',col:'#ff4d6d',fija:true},Transporte:{ico:'🚌',col:'#b06eff',fija:true},
+  Entretenimiento:{ico:'🎮',col:'#ff6b9d',fija:true},Salud:{ico:'❤️',col:'#ff4d6d',fija:true},
+  Educación:{ico:'📚',col:'#4d9fff',fija:true},Ropa:{ico:'👕',col:'#ffb340',fija:true},
+  Servicios:{ico:'📱',col:'#8b90a0',fija:true},Ahorro:{ico:'🏦',col:'#00e5a0',fija:true},Otro:{ico:'📌',col:'#ffb340',fija:true}
 };
-const PAL=['#4d9fff','#00e5a0','#b06eff','#ff4d6d','#ffb340','#ff6b9d','#00d4ff','#7fff6b'];
+const PAL=['#4d9fff','#00e5a0','#b06eff','#ff4d6d','#ffb340','#ff6b9d','#00d4ff','#7fff6b','#ff9f43','#a29bfe','#fd79a8','#55efc4'];
 const CC_BG=['cc-bg-1','cc-bg-2','cc-bg-3','cc-bg-4'];
+
+// CATS es dinámico — mezcla defaults + personalizadas
+let catsPersonalizadas=loadData('mf_cats_custom',{});
+let CATS={...CATS_DEFAULT,...catsPersonalizadas};
+
+function getCatColor(nombre){
+  const keys=Object.keys(CATS);
+  const idx=keys.indexOf(nombre);
+  return CATS[nombre]?.col||PAL[idx%PAL.length]||'#8b90a0';
+}
+
+function poblarSelects(){
+  const opts=Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v.ico} ${k}</option>`).join('');
+  ['f-cat','qa-cat'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+}
+
+function agregarCategoria(){
+  const ico=document.getElementById('new-cat-ico').value.trim()||'🏷️';
+  const nombre=document.getElementById('new-cat-nombre').value.trim();
+  if(!nombre){toast('Escribe el nombre');return;}
+  if(CATS[nombre]){toast('Ya existe esa categoría');return;}
+  const col=PAL[Object.keys(catsPersonalizadas).length%PAL.length];
+  catsPersonalizadas[nombre]={ico,col,fija:false};
+  CATS={...CATS_DEFAULT,...catsPersonalizadas};
+  localStorage.setItem('mf_cats_custom',JSON.stringify(catsPersonalizadas));
+  document.getElementById('new-cat-ico').value='';
+  document.getElementById('new-cat-nombre').value='';
+  poblarSelects();
+  renderCatsList();
+  toast(`Categoría "${nombre}" agregada ✓`);
+}
+
+function eliminarCategoria(nombre){
+  if(CATS_DEFAULT[nombre]){toast('No puedes eliminar categorías predeterminadas');return;}
+  if(!confirm(`¿Eliminar la categoría "${nombre}"?\nLos movimientos existentes la conservarán.`))return;
+  delete catsPersonalizadas[nombre];
+  CATS={...CATS_DEFAULT,...catsPersonalizadas};
+  localStorage.setItem('mf_cats_custom',JSON.stringify(catsPersonalizadas));
+  poblarSelects();renderCatsList();toast('Categoría eliminada');
+}
+
+function renderCatsList(){
+  const el=document.getElementById('cats-list');
+  if(!el)return;
+  el.innerHTML=Object.entries(CATS).map(([k,v])=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)">
+      <span style="font-size:18px;width:28px;text-align:center">${v.ico}</span>
+      <span style="flex:1;font-size:13px;font-weight:600">${k}</span>
+      <span style="width:10px;height:10px;border-radius:50%;background:${v.col};flex-shrink:0"></span>
+      ${!v.fija?`<button onclick="eliminarCategoria('${k}')" style="background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;padding:2px 6px;opacity:.6">✕</button>`:'<span style="width:26px"></span>'}
+    </div>`).join('');
+}
 
 // ── UTILS ────────────────────────────────────────────────────────
 function fmt(n){return '$'+Math.round(n).toLocaleString('es-MX')}
@@ -532,8 +595,9 @@ function renderPage(pg){
   if(pg==='inicio')renderInicio();
   else if(pg==='finanzas'){const s=curSub.finanzas;if(s==='resumen')renderFinResumen();else if(s==='metas')renderMetas();}
   else if(pg==='creditos'){const s=curSub.creditos;if(s==='resumen')renderCredResumen();else if(s==='graficas')renderCredGraficas();}
+  else if(pg==='presupuesto')renderPresupuesto();
   else if(pg==='analisis')renderAnalisis();
-  else if(pg==='ajustes')renderStorageInfo();
+  else if(pg==='ajustes'){renderStorageInfo();renderCatsList();}
 }
 function renderAll(){renderHeader();renderInicio();}
 
@@ -584,6 +648,30 @@ function renderInicio(){
   `;
   document.getElementById('ini-txns').innerHTML=txns.slice(0,5).map(t=>txnHtml(t,false)).join('')
     ||`<div class="empty"><div class="empty-ico">📋</div>Sin movimientos aún.<br>Ve a Finanzas → + Registrar</div>`;
+
+  // Presupuesto mini en inicio
+  const pTotal=presupuesto.total||0;
+  if(pTotal>0){
+    const gastoMes=mes.filter(t=>t.tipo==='gasto').reduce((a,t)=>a+t.monto,0);
+    const pp=Math.min(100,Math.round(gastoMes/pTotal*100));
+    const pCol=pp>=90?'var(--r)':pp>=70?'var(--a)':'var(--g)';
+    const existing=document.getElementById('ini-pres-mini');
+    const miniHtml=`<div id="ini-pres-mini" style="background:var(--card);border:0.5px solid var(--border);border-radius:var(--rad-sm);padding:13px;margin-bottom:10px;cursor:pointer" onclick="navTo('presupuesto',document.querySelectorAll('.nav-btn')[4])">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:600;color:var(--text2)">PRESUPUESTO</span>
+        <span style="font-family:var(--mono);font-size:12px;color:${pCol}">${pp}%</span>
+      </div>
+      <div style="height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:7px">
+        <div style="height:100%;width:${pp}%;background:${pCol};border-radius:3px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px">
+        <span style="color:var(--r);font-family:var(--mono)">-${fmt(gastoMes)}</span>
+        <span style="color:var(--g);font-family:var(--mono)">${fmt(Math.max(0,pTotal-gastoMes))} libre</span>
+      </div>
+    </div>`;
+    if(existing) existing.outerHTML=miniHtml;
+    else document.getElementById('ini-credito').insertAdjacentHTML('afterend',miniHtml);
+  }
 }
 
 // ── FINANZAS ─────────────────────────────────────────────────────
@@ -839,9 +927,112 @@ function guardarQuick(){
   toast((qaType==='ingreso'?'Ingreso':'Gasto')+' registrado ✓');
 }
 
+// ── PRESUPUESTO ──────────────────────────────────────────────────
+function getPresCats(){return Object.keys(CATS).filter(c=>!['Trabajo','Freelance'].includes(c));}
+
+function guardarPresupuesto(){
+  const total=parseFloat(document.getElementById('p-total').value)||0;
+  const cats={};
+  getPresCats().forEach(c=>{
+    const el=document.getElementById('pc-'+c.replace(/\s/g,'_'));
+    if(el){const v=parseFloat(el.value)||0;if(v>0)cats[c]=v;}
+  });
+  presupuesto={total,cats};
+  saveAll();renderPresupuesto();toast('Presupuesto guardado ✓');
+}
+
+function renderPresupuesto(){
+  const mes=getMes();
+  const gastoTotal=mes.filter(t=>t.tipo==='gasto').reduce((a,t)=>a+t.monto,0);
+  const pTotal=presupuesto.total||0;
+  const pUsadoPct=pTotal>0?Math.min(100,Math.round(gastoTotal/pTotal*100)):0;
+  const pRestante=pTotal>0?Math.max(0,pTotal-gastoTotal):0;
+  const pCls=pUsadoPct>=90?'bad':pUsadoPct>=70?'warn':'ok';
+  const pCol=pUsadoPct>=90?'var(--r)':pUsadoPct>=70?'var(--a)':'var(--g)';
+
+  // Hero card
+  const heroHtml=pTotal>0?`
+    <div style="background:var(--card);border:0.5px solid var(--border2);border-radius:var(--rad);padding:20px;margin-bottom:12px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:${pCol}18;pointer-events:none"></div>
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Presupuesto mensual</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px">
+        <div>
+          <div style="font-family:var(--mono);font-size:32px;font-weight:500;color:${pCol}">${fmt(gastoTotal)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">gastado de ${fmt(pTotal)}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--mono);font-size:22px;font-weight:500;color:var(--g)">${fmt(pRestante)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">disponible</div>
+        </div>
+      </div>
+      <div style="height:10px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden;margin-bottom:8px">
+        <div style="height:100%;width:${pUsadoPct}%;background:${pCol};border-radius:5px;transition:width .6s cubic-bezier(.4,0,.2,1)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)">
+        <span>${pUsadoPct}% utilizado</span>
+        <span class="${pCls}" style="font-weight:600;color:${pCol}">${pUsadoPct>=90?'⚠ Límite alcanzado':pUsadoPct>=70?'Precaución':'En control'}</span>
+      </div>
+    </div>`:
+    `<div class="alert ok" style="margin-bottom:12px">Define tu presupuesto mensual abajo para empezar a monitorear tus gastos.</div>`;
+  document.getElementById('pres-hero').innerHTML=heroHtml;
+
+  // Categorías
+  const catGastos={};
+  mes.filter(t=>t.tipo==='gasto').forEach(t=>{catGastos[t.cat]=(catGastos[t.cat]||0)+t.monto;});
+  const hasCatPres=Object.keys(presupuesto.cats||{}).length>0;
+  const allCats=[...new Set([...Object.keys(presupuesto.cats||{}), ...Object.keys(catGastos)])];
+
+  let catsHtml='';
+  if(!hasCatPres&&Object.keys(catGastos).length===0){
+    catsHtml=`<div class="empty"><div class="empty-ico">🎯</div>Sin datos aún.<br>Registra gastos y define un presupuesto.</div>`;
+  } else {
+    allCats.forEach(cat=>{
+      const gastado=catGastos[cat]||0;
+      const limite=presupuesto.cats?.[cat]||0;
+      const p=limite>0?Math.min(100,Math.round(gastado/limite*100)):0;
+      const col=p>=90?'var(--r)':p>=70?'var(--a)':'var(--g)';
+      const ico=CATS[cat]?.ico||'📌';
+      catsHtml+=`<div style="background:var(--card);border:0.5px solid var(--border);border-radius:var(--rad-sm);padding:14px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:18px">${ico}</span>
+            <span style="font-size:13px;font-weight:600">${cat}</span>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:var(--mono);font-size:13px;font-weight:500;color:${gastado>0?'var(--r)':'var(--text3)'}">-${fmt(gastado)}</div>
+            ${limite>0?`<div style="font-size:10px;color:var(--text3);margin-top:1px">de ${fmt(limite)}</div>`:'<div style="font-size:10px;color:var(--text3)">sin límite</div>'}
+          </div>
+        </div>
+        ${limite>0?`
+        <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:6px">
+          <div style="height:100%;width:${p}%;background:${col};border-radius:3px;transition:width .5s"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
+          <span>${p}% usado</span>
+          <span style="color:var(--g)">${fmt(Math.max(0,limite-gastado))} libre</span>
+        </div>`:''}
+      </div>`;
+    });
+  }
+  document.getElementById('pres-cats').innerHTML=catsHtml;
+
+  // Rellenar inputs con valores actuales
+  document.getElementById('p-total').value=presupuesto.total||'';
+  let catInputsHtml='';
+  getPresCats().forEach(c=>{
+    const safeId=c.replace(/\s/g,'_');
+    catInputsHtml+=`<div class="form-row" style="margin-bottom:8px">
+      <label>${CATS[c]?.ico||'📌'} ${c}</label>
+      <input type="number" id="pc-${safeId}" inputmode="numeric" placeholder="0" value="${presupuesto.cats?.[c]||''}">
+    </div>`;
+  });
+  document.getElementById('p-cat-inputs').innerHTML=catInputsHtml;
+}
+
 // ── INIT ─────────────────────────────────────────────────────────
 document.getElementById('hdr-date').textContent=new Date().toLocaleDateString('es-MX',{day:'numeric',month:'short'});
 document.getElementById('f-fecha').value=new Date().toISOString().split('T')[0];
+poblarSelects();
 window.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveAll();});
 window.addEventListener('pagehide',saveAll);
 window.addEventListener('beforeunload',saveAll);

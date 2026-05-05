@@ -1115,6 +1115,28 @@ window.addEventListener('visibilitychange',()=>{if(document.visibilityState==='h
 window.addEventListener('pagehide',saveAll);
 window.addEventListener('beforeunload',saveAll);
 (function(){const p=new URLSearchParams(window.location.search).get('page');if(p==='registrar')setTimeout(openQA,200);})();
+
+// ── SERVICE WORKER ─────────────────────────────────────────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/MisFinanzas/sw.js').then(reg=>{
+    reg.addEventListener('updatefound',()=>{
+      const nw=reg.installing;
+      nw.addEventListener('statechange',()=>{
+        if(nw.state==='installed'&&navigator.serviceWorker.controller){
+          // Nueva versión lista — mostrar banner
+          const banner=document.createElement('div');
+          banner.id='update-banner';
+          banner.style.cssText='position:fixed;top:calc(var(--safe-top) + 8px);left:50%;transform:translateX(-50%);background:#1c2230;border:0.5px solid rgba(0,240,168,.35);border-radius:99px;padding:10px 20px;font-size:13px;font-weight:600;color:var(--g);z-index:2000;cursor:pointer;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.4);white-space:nowrap;font-family:var(--font)';
+          banner.innerHTML='⚡ Actualización disponible <span style="color:var(--text2);font-weight:400">— toca para aplicar</span>';
+          banner.onclick=()=>{nw.postMessage({type:'SKIP_WAITING'});window.location.reload();};
+          document.body.appendChild(banner);
+        }
+      });
+    });
+  }).catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange',()=>window.location.reload());
+}
+
 renderInicio();
 </script>
 </body>

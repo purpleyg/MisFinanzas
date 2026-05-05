@@ -196,6 +196,16 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;overflow:h
 /* DIVIDER */
 .divider{height:0.5px;background:var(--border);margin:6px 0 14px}
 
+/* QUICK ADD MODAL */
+.qa-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s}
+.qa-overlay.open{opacity:1;pointer-events:all}
+.qa-sheet{background:var(--bg2);border:0.5px solid var(--border2);border-radius:24px 24px 0 0;padding:12px 20px 0;width:100%;max-width:430px;margin:0 auto;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.qa-overlay.open .qa-sheet{transform:translateY(0)}
+.qa-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
+.qa-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.qa-title{font-size:16px;font-weight:700;color:var(--text)}
+.qa-close{background:var(--bg3);border:none;color:var(--text3);font-size:14px;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
 /* ANIMATIONS */
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .page.on .stat,.page.on .txn,.page.on .cc,.page.on .meta-card{animation:fadeUp .25s ease both}
@@ -380,6 +390,42 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;overflow:h
 
 <div class="safe-bot"></div>
 <div class="toast" id="toast"></div>
+
+<!-- QUICK ADD MODAL -->
+<div id="qa-modal" class="qa-overlay" onclick="if(event.target===this)cerrarQuickAdd()">
+  <div class="qa-sheet">
+    <div class="qa-handle"></div>
+    <div class="qa-header">
+      <span class="qa-title">Registro rápido</span>
+      <button class="qa-close" onclick="cerrarQuickAdd()">✕</button>
+    </div>
+    <div class="type-toggle" style="margin-bottom:14px">
+      <button class="type-btn ing" id="qa-tipo-ing" onclick="setQaTipo('ingreso')">↑ Ingreso</button>
+      <button class="type-btn on gas" id="qa-tipo-gas" onclick="setQaTipo('gasto')">↓ Gasto</button>
+    </div>
+    <div class="form-row"><label>Monto ($)</label><input type="number" id="qa-monto" inputmode="decimal" placeholder="0.00" min="0" step="0.01"></div>
+    <div class="form-row"><label>Descripción (opcional)</label><input type="text" id="qa-desc" placeholder="¿En qué?"></div>
+    <div class="form-grid">
+      <div class="form-row"><label>Categoría</label>
+        <select id="qa-cat">
+          <option value="Comida">Comida</option>
+          <option value="Transporte">Transporte</option>
+          <option value="Entretenimiento">Entretenimiento</option>
+          <option value="Servicios">Servicios</option>
+          <option value="Ropa">Ropa</option>
+          <option value="Salud">Salud</option>
+          <option value="Trabajo">Trabajo / Salario</option>
+          <option value="Freelance">Freelance</option>
+          <option value="Ahorro">Ahorro</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Fecha</label><input type="date" id="qa-fecha"></div>
+    </div>
+    <button class="btn-p" style="margin-top:4px" onclick="guardarQuick()">Guardar</button>
+    <div style="height:env(safe-area-inset-bottom,16px)"></div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
@@ -756,12 +802,60 @@ function renderAnalisis(){
     </div>`;
 }
 
+// ── QUICK ADD MODAL ──────────────────────────────────────────────
+function abrirQuickAdd(){
+  document.getElementById('qa-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('qa-tipo-ing').className='type-btn on ing';
+  document.getElementById('qa-tipo-gas').className='type-btn gas';
+  qaType='gasto';
+  // Default to gasto for quick add
+  document.getElementById('qa-tipo-gas').className='type-btn on gas';
+  document.getElementById('qa-tipo-ing').className='type-btn ing';
+  document.getElementById('qa-desc').value='';
+  document.getElementById('qa-monto').value='';
+  document.getElementById('qa-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('qa-monto').focus(),300);
+}
+function cerrarQuickAdd(){
+  document.getElementById('qa-modal').classList.remove('open');
+}
+let qaType='gasto';
+function setQaTipo(t){
+  qaType=t;
+  document.getElementById('qa-tipo-ing').className='type-btn'+(t==='ingreso'?' on ing':' ing');
+  document.getElementById('qa-tipo-gas').className='type-btn gas'+(t==='gasto'?' on gas':'');
+}
+function guardarQuick(){
+  const desc=document.getElementById('qa-desc').value.trim();
+  const monto=parseFloat(document.getElementById('qa-monto').value);
+  const cat=document.getElementById('qa-cat').value;
+  const fecha=document.getElementById('qa-fecha').value;
+  if(!monto||monto<=0){toast('Escribe el monto');return;}
+  txns.unshift({id:Date.now(),tipo:qaType,desc:desc||cat,monto,cat,fecha});
+  saveAll();renderHeader();
+  if(curPage==='inicio')renderInicio();
+  else if(curPage==='finanzas'&&curSub.finanzas==='resumen')renderFinResumen();
+  cerrarQuickAdd();
+  toast((qaType==='ingreso'?'Ingreso':'Gasto')+' registrado ✓');
+}
+
 // ── INIT ─────────────────────────────────────────────────────────
 document.getElementById('hdr-date').textContent=new Date().toLocaleDateString('es-MX',{day:'numeric',month:'short'});
 document.getElementById('f-fecha').value=new Date().toISOString().split('T')[0];
 window.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveAll();});
 window.addEventListener('pagehide',saveAll);
 window.addEventListener('beforeunload',saveAll);
+
+// URL param: ?page=registrar → abre directo la pantalla de registro
+(function(){
+  const params=new URLSearchParams(window.location.search);
+  const pg=params.get('page');
+  if(pg==='registrar'){
+    // Pequeño delay para que cargue el DOM
+    setTimeout(()=>abrirQuickAdd(),200);
+  }
+})();
+
 renderInicio();
 </script>
 </body>

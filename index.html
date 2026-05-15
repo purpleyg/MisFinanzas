@@ -457,6 +457,31 @@ body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;overflow:h
 <div class="sb"></div>
 <div class="toast" id="toast"></div>
 
+<!-- ── EDIT TARJETA MODAL ── -->
+<div id="et-ov" class="qa-ov" onclick="if(event.target===this)closeEditTarj()">
+  <div class="qa-sh">
+    <div class="qa-handle"></div>
+    <div class="qa-hdr">
+      <span class="qa-title">Editar tarjeta</span>
+      <button class="qa-x" onclick="closeEditTarj()">✕</button>
+    </div>
+    <input type="hidden" id="et-id">
+    <div class="frow"><label>Nombre / apodo</label><input type="text" id="et-nom" placeholder="Visa Banamex"></div>
+    <div class="frow"><label>Banco</label><input type="text" id="et-banco" placeholder="BBVA, Banamex…"></div>
+    <div class="fgrid">
+      <div class="frow"><label>Límite ($)</label><input type="number" id="et-lim" inputmode="decimal" placeholder="0.00" step="0.01"></div>
+      <div class="frow"><label>Saldo usado ($)</label><input type="number" id="et-sal" inputmode="decimal" placeholder="0.00" step="0.01"></div>
+    </div>
+    <div class="fgrid">
+      <div class="frow"><label>Pago mínimo ($)</label><input type="number" id="et-pmin" inputmode="decimal" placeholder="0.00" step="0.01"></div>
+      <div class="frow"><label>Día de corte</label><input type="number" id="et-corte" inputmode="numeric" placeholder="1–31" min="1" max="31"></div>
+    </div>
+    <div class="frow"><label>Tasa anual (%)</label><input type="number" id="et-tasa" inputmode="decimal" placeholder="0.0" step="0.1"></div>
+    <button class="btn-main" onclick="guardarEditTarj()">Guardar cambios</button>
+    <div style="height:max(env(safe-area-inset-bottom,0px),16px)"></div>
+  </div>
+</div>
+
 <!-- ── QUICK ADD MODAL ── -->
 <div id="qa-ov" class="qa-ov" onclick="if(event.target===this)closeQA()">
   <div class="qa-sh">
@@ -837,6 +862,35 @@ function delTarj(id){
   if(!confirm('¿Eliminar esta tarjeta?\nLos movimientos vinculados no cambiarán.'))return;
   tarjs=tarjs.filter(t=>t.id!==id);saveAll();renderHeader();fillTarjSelects();renderCredRes();toast('Eliminada');
 }
+function editTarj(id){
+  const t=tarjs.find(x=>x.id===id);if(!t)return;
+  // Rellenar el modal de edición
+  document.getElementById('et-id').value=id;
+  document.getElementById('et-nom').value=t.nombre;
+  document.getElementById('et-banco').value=t.banco||'';
+  document.getElementById('et-lim').value=t.limite;
+  document.getElementById('et-sal').value=t.saldo;
+  document.getElementById('et-pmin').value=t.pmin||'';
+  document.getElementById('et-corte').value=t.corte||'';
+  document.getElementById('et-tasa').value=t.tasa||'';
+  document.getElementById('et-ov').classList.add('open');
+}
+function closeEditTarj(){document.getElementById('et-ov').classList.remove('open');}
+function guardarEditTarj(){
+  const id=parseInt(document.getElementById('et-id').value);
+  const idx=tarjs.findIndex(t=>t.id===id);if(idx<0)return;
+  const nom=document.getElementById('et-nom').value.trim();
+  const banco=document.getElementById('et-banco').value.trim();
+  const lim=parseFloat(document.getElementById('et-lim').value)||0;
+  const sal=parseFloat(document.getElementById('et-sal').value)||0;
+  const pmin=parseFloat(document.getElementById('et-pmin').value)||0;
+  const corte=parseInt(document.getElementById('et-corte').value)||0;
+  const tasa=parseFloat(document.getElementById('et-tasa').value)||0;
+  if(!nom||lim<=0){toast('Completa nombre y límite');return;}
+  if(sal>lim){toast('El saldo no puede superar el límite');return;}
+  tarjs[idx]={...tarjs[idx],nombre:nom,banco,limite:lim,saldo:sal,pmin,corte,tasa};
+  saveAll();renderHeader();fillTarjSelects();renderCredRes();closeEditTarj();toast('Tarjeta actualizada ✓');
+}
 function cortechip(corte){
   if(!corte)return '';
   const d=diasCorte(corte);
@@ -868,8 +922,9 @@ function ccHtml(t,i){
       ${t.pmin?`<div class="cc-drow"><span class="cc-dl">Pago mínimo</span><span class="cc-dv">${fmt(t.pmin)}</span></div>`:''}
       ${t.tasa?`<div class="cc-drow"><span class="cc-dl">Tasa anual</span><span class="cc-dv">${t.tasa}%</span></div>`:''}
       ${int?`<div class="cc-drow"><span class="cc-dl">Interés mensual</span><span class="cc-dv" style="color:var(--r)">${fmt(int)}</span></div>`:''}
-      <div class="cc-drow" style="border:none;padding-top:10px;justify-content:flex-end">
-        <button onclick="delTarj(${t.id})" style="background:none;border:none;color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;font-family:var(--font)">✕ Eliminar</button>
+      <div class="cc-drow" style="border:none;padding-top:10px;justify-content:space-between">
+        <button onclick="editTarj(${t.id})" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px">✏️ Editar</button>
+        <button onclick="delTarj(${t.id})" style="background:none;border:none;color:rgba(255,255,255,.25);font-size:12px;cursor:pointer;font-family:var(--font)">✕ Eliminar</button>
       </div>
     </div>
   </div>`;

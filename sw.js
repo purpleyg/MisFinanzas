@@ -1,6 +1,6 @@
 // Service Worker — Mis Finanzas
 // Cambia este número cada vez que subas una actualización
-const VERSION = 'v1.0';
+const VERSION = 'v1.1';
 const CACHE = 'finanzas-' + VERSION;
 
 const ASSETS = [
